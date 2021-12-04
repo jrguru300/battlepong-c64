@@ -53,6 +53,7 @@ void load_sprite_to_block (unsigned char *sprite, unsigned char blockno)
   }
 }
 
+
 void set_sprite_enable_mask (unsigned char mask)
 {
   POKE(VRAM_START + 21, mask);
@@ -79,4 +80,28 @@ void set_sprite_coordinates (unsigned char spriteno, unsigned char pos_x, unsign
 {
   POKE(VRAM_START + spriteno*2,     pos_x);
   POKE(VRAM_START + (spriteno*2)+1, pos_y);
+}
+
+/*
+  53285/$D025 is the common color displayed for "01" bit pairs in the sprite data, and
+  53286/$D026 is the common color displayed for "11" bit pairs in the sprite data.
+  %00	transparency
+  %10	Sprite color register (normal/uni color; $D027-$D02E)
+  %01	Multicolor register #0 ($D025)
+  %11	Multicolor register #1 ($D026)
+*/
+
+void set_sprite_mode_mask (unsigned char mask)
+{
+  POKE(53276, mask); // high resolution mode (0), multicolor mode (1) - LSB sprite #0
+}
+
+void set_sprite_color_m0 (unsigned char color)
+{
+  POKE(53285, color);
+}
+
+void set_sprite_color_m1 (unsigned char color)
+{
+  POKE(53286, color);
 }

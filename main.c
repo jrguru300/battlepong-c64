@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <modload.h>
 #include <joystick.h>
+#include <peekpoke.h>
 
 #include "gfx.h"
 #include "spritedata.h"
@@ -59,11 +60,15 @@ int main (void)
 	screensize (&screen_size_x, &screen_size_y);
 	clear_screen ();
 
+	set_sprite_mode_mask(0b00000001);
+	set_sprite_color_m0 (COLOR_BLUE);
+	set_sprite_color_m1 (COLOR_ORANGE);
+
 	set_text_color (COLOR_WHITE);
 	set_border_color (COLOR_BLACK);
 	set_background_color (COLOR_BLACK);
 
-  load_sprite_to_block 	 (balloon_sprite, 13);
+  load_sprite_to_block 	 (spacefox_sprite, 13);
   set_sprite_from_block  (0, 13);
 	set_sprite_enable_mask (0b00000001);
 	set_sprite_coordinates (0, 64, 64);
