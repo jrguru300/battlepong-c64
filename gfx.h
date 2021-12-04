@@ -32,6 +32,7 @@ void set_background_color   (unsigned char color);
 void set_border_color       (unsigned char color);
 void set_text_color         (unsigned char color);
 void set_sprite_mode_mask   (unsigned char mask);
+void set_sprite_color       (unsigned char spriteno, unsigned char color);
 void set_sprite_color_m0    (unsigned char color);
 void set_sprite_color_m1    (unsigned char color);
 void load_sprite_to_block   (unsigned char *sprite, unsigned char blockno);

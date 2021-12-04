@@ -98,10 +98,28 @@ void set_sprite_mode_mask (unsigned char mask)
 
 void set_sprite_color_m0 (unsigned char color)
 {
-  POKE(53285, color);
+  POKE(53285, color); // common color "01"
 }
 
 void set_sprite_color_m1 (unsigned char color)
 {
-  POKE(53286, color);
+  POKE(53286, color); // common color "11"
+}
+
+/*
+Sprite color registers
+
+#0	53287/$D027
+#1	53288/$D028
+#2	53289/$D029
+#3	53290/$D02A
+#4	53291/$D02B
+#5	53292/$D02C
+#6	53293/$D02D
+#7	53294/$D02E
+*/
+
+void set_sprite_color (unsigned char spriteno, unsigned char color)
+{
+  POKE(53287+spriteno, color); // unique sprite color
 }

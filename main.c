@@ -55,12 +55,13 @@ void draw_field (void)
 
 int main (void)
 {
+
 	joy_install (joy_static_stddrv);
 
 	screensize (&screen_size_x, &screen_size_y);
 	clear_screen ();
 
-	set_sprite_mode_mask(0b00000001);
+	set_sprite_mode_mask(0b00000011);
 	set_sprite_color_m0 (COLOR_BLUE);
 	set_sprite_color_m1 (COLOR_ORANGE);
 
@@ -70,8 +71,15 @@ int main (void)
 
   load_sprite_to_block 	 (spacefox_sprite, 13);
   set_sprite_from_block  (0, 13);
-	set_sprite_enable_mask (0b00000001);
+	set_sprite_from_block  (1, 13);
+
+	set_sprite_color (0, COLOR_WHITE);
+	set_sprite_color (1, COLOR_CYAN);
+
+	set_sprite_enable_mask (0b00000011);
 	set_sprite_coordinates (0, 64, 64);
+	set_sprite_coordinates (1, 64, 64);
+
 
 	player_one.pos_x = 64;
 	player_one.pos_y = 64;
