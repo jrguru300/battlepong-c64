@@ -107,19 +107,30 @@ void set_sprite_color_m1 (unsigned char color)
 }
 
 /*
-Sprite color registers
+  Sprite color registers
 
-#0	53287/$D027
-#1	53288/$D028
-#2	53289/$D029
-#3	53290/$D02A
-#4	53291/$D02B
-#5	53292/$D02C
-#6	53293/$D02D
-#7	53294/$D02E
+  #0	53287/$D027
+  #1	53288/$D028
+  #2	53289/$D029
+  #3	53290/$D02A
+  #4	53291/$D02B
+  #5	53292/$D02C
+  #6	53293/$D02D
+  #7	53294/$D02E
 */
 
 void set_sprite_color (unsigned char spriteno, unsigned char color)
 {
   POKE(53287+spriteno, color); // unique sprite color
+}
+
+/*
+  Registers 53277/$D01D and 53271/$D017, each sprite may be individually "stretched" to twice the width and/or twice the height.
+  In both registers, the least significant bit affects sprite #0, and the most sigificant bit sprite #7.
+*/
+
+void stretch_sprites (unsigned char h_mask, unsigned char v_mask)
+{
+  POKE(53277, h_mask);
+  POKE(53271, v_mask);
 }

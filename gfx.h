@@ -35,6 +35,7 @@ void set_sprite_mode_mask   (unsigned char mask);
 void set_sprite_color       (unsigned char spriteno, unsigned char color);
 void set_sprite_color_m0    (unsigned char color);
 void set_sprite_color_m1    (unsigned char color);
+void stretch_sprites        (unsigned char h_mask, unsigned char v_mask);
 void load_sprite_to_block   (unsigned char *sprite, unsigned char blockno);
 void set_sprite_from_block  (unsigned char spriteno, unsigned char blockno);
 void set_sprite_enable_mask (unsigned char mask);

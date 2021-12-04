@@ -66,7 +66,7 @@ int main (void)
 	set_sprite_color_m1 (COLOR_ORANGE);
 
 	set_text_color (COLOR_WHITE);
-	set_border_color (COLOR_BLACK);
+	set_border_color (COLOR_BLUE);
 	set_background_color (COLOR_BLACK);
 
   load_sprite_to_block 	 (spacefox_sprite, 13);
@@ -74,7 +74,9 @@ int main (void)
 	set_sprite_from_block  (1, 13);
 
 	set_sprite_color (0, COLOR_WHITE);
-	set_sprite_color (1, COLOR_CYAN);
+	set_sprite_color (1, COLOR_YELLOW);
+
+	stretch_sprites (0b00000000, 0b00000011); // h_mask, v_mask
 
 	set_sprite_enable_mask (0b00000011);
 	set_sprite_coordinates (0, 64, 64);
