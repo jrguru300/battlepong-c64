@@ -6,17 +6,20 @@
 #include <ctype.h>
 #include <modload.h>
 #include <joystick.h>
+#include <time.h>
 
 #include "gfx.h"
+#include "sound.h"
 #include "spritedata.h"
 #include "players.h"
 
+extern int start_sidtune_player();
+
 struct player player_one;
 struct player player_two;
-
 unsigned char screen_size_x, screen_size_y;
-
 static const char title [] = "BattlePong!";
+clock_t system_time;
 
 void poll_joysticks (void)
 {
@@ -27,6 +30,7 @@ void poll_joysticks (void)
 	if (JOY_DOWN  (player_one.joy)) player_one.pos_y++;
 	if (JOY_LEFT  (player_one.joy)) player_one.pos_x--;
 	if (JOY_RIGHT (player_one.joy)) player_one.pos_x++;
+	if (JOY_FIRE  (player_one.joy)) sid_play_effect(SOUND_SHOT);
 }
 
 void draw_field (void)
@@ -73,8 +77,11 @@ int main (void)
 
 	draw_field();
 
+	// start_sidtune_player();
+
   while (1)
 	{
+		// system_time = clock();
 		poll_joysticks();
 		set_sprite_coordinates (0, player_one.pos_x, player_one.pos_y);
 	}
