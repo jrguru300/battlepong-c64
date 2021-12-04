@@ -28,6 +28,11 @@ void poll_joysticks (void)
 	if (JOY_DOWN  (player_one.joy)) player_one.pos_y++;
 	if (JOY_LEFT  (player_one.joy)) player_one.pos_x--;
 	if (JOY_RIGHT (player_one.joy)) player_one.pos_x++;
+
+	if (JOY_UP    (player_two.joy)) player_two.pos_y--;
+	if (JOY_DOWN  (player_two.joy)) player_two.pos_y++;
+	if (JOY_LEFT  (player_two.joy)) player_two.pos_x--;
+	if (JOY_RIGHT (player_two.joy)) player_two.pos_x++;
 }
 
 void draw_field (void)
@@ -62,8 +67,8 @@ int main (void)
 	clear_screen ();
 
 	set_sprite_mode_mask(0b00000011);
-	set_sprite_color_m0 (COLOR_BLUE);
-	set_sprite_color_m1 (COLOR_ORANGE);
+	set_sprite_color_0 (COLOR_BLUE);
+	set_sprite_color_1 (COLOR_ORANGE);
 
 	set_text_color (COLOR_WHITE);
 	set_border_color (COLOR_BLUE);
@@ -74,7 +79,7 @@ int main (void)
 	set_sprite_from_block  (1, 13);
 
 	set_sprite_color (0, COLOR_WHITE);
-	set_sprite_color (1, COLOR_YELLOW);
+	set_sprite_color (1, COLOR_CYAN);
 
 	stretch_sprites (0b00000000, 0b00000011); // h_mask, v_mask
 
@@ -82,6 +87,8 @@ int main (void)
 	set_sprite_coordinates (0, 64, 64);
 	set_sprite_coordinates (1, 64, 64);
 
+	player_two.pos_x = 128;
+	player_two.pos_y = 64;
 
 	player_one.pos_x = 64;
 	player_one.pos_y = 64;
@@ -92,6 +99,9 @@ int main (void)
 	{
 		poll_joysticks();
 		set_sprite_coordinates (0, player_one.pos_x, player_one.pos_y);
+		set_sprite_coordinates (1, player_two.pos_x, player_two.pos_y);
+		gotoxy (1, 1);
+		cprintf("R: %d", get_raster());
 	}
 
 	joy_uninstall ();

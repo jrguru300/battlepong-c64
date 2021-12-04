@@ -24,6 +24,11 @@ void set_text_color (unsigned char color)
   textcolor ( color );
 }
 
+unsigned char get_raster (void)
+{
+  return PEEK(RASTER_ADDRESS);
+}
+
 void clear_screen (void)
 {
   clrscr ();
@@ -49,7 +54,7 @@ void load_sprite_to_block (unsigned char *sprite, unsigned char blockno)
 {
   unsigned char n;
   for (n = 0; n < SPRITE_SIZE; n++) {
-    POKE((64*blockno) + n, sprite[n]);
+    POKE((SPRITE_BLOCK_SIZE * blockno) + n, sprite[n]);
   }
 }
 
@@ -61,7 +66,7 @@ void set_sprite_enable_mask (unsigned char mask)
 
 void set_sprite_from_block (unsigned char spriteno, unsigned char blockno)
 {
-  POKE(2040 + spriteno, blockno); // set sprite pointer
+  POKE(SPRITE_POINT_START + spriteno, blockno); // set sprite pointer
 }
 
 /*
@@ -93,17 +98,17 @@ void set_sprite_coordinates (unsigned char spriteno, unsigned char pos_x, unsign
 
 void set_sprite_mode_mask (unsigned char mask)
 {
-  POKE(53276, mask); // high resolution mode (0), multicolor mode (1) - LSB sprite #0
+  POKE(SPRITE_MODE, mask); // high resolution mode (0), multicolor mode (1) - LSB sprite #0
 }
 
-void set_sprite_color_m0 (unsigned char color)
+void set_sprite_color_0 (unsigned char color)
 {
-  POKE(53285, color); // common color "01"
+  POKE(SPRITE_COMMON_C_1, color); // common color "01"
 }
 
-void set_sprite_color_m1 (unsigned char color)
+void set_sprite_color_1 (unsigned char color)
 {
-  POKE(53286, color); // common color "11"
+  POKE(SPRITE_COMMON_C_2, color); // common color "11"
 }
 
 /*
@@ -121,16 +126,40 @@ void set_sprite_color_m1 (unsigned char color)
 
 void set_sprite_color (unsigned char spriteno, unsigned char color)
 {
-  POKE(53287+spriteno, color); // unique sprite color
+  POKE(SPRITE_COLOR_START+spriteno, color); // unique sprite color
 }
 
 /*
-  Registers 53277/$D01D and 53271/$D017, each sprite may be individually "stretched" to twice the width and/or twice the height.
+  Registers 53277/$D01D and 53271/$D017,
+  each sprite may be individually "stretched" to twice the width and/or twice the height.
   In both registers, the least significant bit affects sprite #0, and the most sigificant bit sprite #7.
 */
 
 void stretch_sprites (unsigned char h_mask, unsigned char v_mask)
 {
-  POKE(53277, h_mask);
-  POKE(53271, v_mask);
+  POKE(STRETCH_SPRITE_H, h_mask);
+  POKE(STRETCH_SPRITE_V, v_mask);
 }
+
+// TODO
+
+/*
+  Through manipulating the bits in address 53275/$D01B,
+  sprites can be set to appear "behind" (bits set to "1") or "in front of" (bits set to "0") background graphics.
+  The least significant bit affects sprite #0, and the most sigificant bit sprite #7.
+*/
+
+/*
+  Polling for collisions
+  There are two VIC registers that can be polled to see if a collision involving sprites have occured:
+
+  Sprites involved in a collision with other sprites will have their respective bits set to "1" in address 53278/$D01E – all other sprites will have a "0" bit here.
+  Sprites involved in a collision with background graphics will have their respective bits set to "1" in address 53279/$D01F – all other sprites will report a "0".
+  As with all other "one bit per sprite" registers, the least significant bit affects sprite #0, and the most sigificant bit sprite #7.
+
+  Interrupt on collision
+  Both the interrupt event register (at address 53273/$D019) and interrupt enable register (at address 53274/$D01A) have provisions for raising IRQ-type interrupts at the CPU whenever collisions occur:
+
+  Bit 2 (weight 4) in both registers concern sprite-to-sprite collisions, and
+  Bit 1 (weight 2) in both registers concern sprite-to-background collisions.
+*/
