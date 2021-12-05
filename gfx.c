@@ -88,9 +88,20 @@ void set_sprite_from_block (unsigned char spriteno, unsigned char blockno)
   address 53264/$D010; the least significant bit here corresponds to sprite #0.
 */
 
-void set_sprite_coordinates (unsigned char spriteno, unsigned char pos_x, unsigned char pos_y)
+unsigned char sprite_pos_x_mask = 0x00;
+
+void set_sprite_coordinates (unsigned char spriteno, int pos_x, unsigned char pos_y)
 {
-  POKE(VRAM_START + spriteno*2,     pos_x);
+  if (pos_x > 255) {
+    sprite_pos_x_mask |= 1UL << spriteno;
+  }
+  else {
+    sprite_pos_x_mask &= ~(1UL << spriteno);
+  }
+
+  POKE(SPRITE_X_COORD_MSB, sprite_pos_x_mask);
+
+  POKE(VRAM_START + spriteno*2,     pos_x & 0xFF);
   POKE(VRAM_START + (spriteno*2)+1, pos_y);
 }
 

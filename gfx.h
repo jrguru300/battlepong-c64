@@ -27,6 +27,7 @@
 #define BACKGROUND_COLOR    0xD021
 #define STRETCH_SPRITE_V    0xD017
 #define STRETCH_SPRITE_H    0xD01D
+#define SPRITE_X_COORD_MSB  0xD010
 #define SPRITE_PRIORITY     0xD01B
 #define SPRITE_COLOR_START  0xD027
 #define SPRITE_COMMON_C_1   0xD025
@@ -51,6 +52,6 @@ void load_sprite_to_block   (unsigned char *sprite, unsigned char blockno);
 void set_sprite_from_block  (unsigned char spriteno, unsigned char blockno);
 void set_sprite_enable_mask (unsigned char mask);
 void set_sprite_priority    (unsigned char mask);
-void set_sprite_coordinates (unsigned char spriteno, unsigned char pos_x, unsigned char pos_y);
+void set_sprite_coordinates (unsigned char spriteno, int pos_x, unsigned char pos_y);
 
 #endif

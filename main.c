@@ -81,7 +81,7 @@ int main (void)
 	set_sprite_color (0, COLOR_WHITE);
 	set_sprite_color (1, COLOR_CYAN);
 
-	stretch_sprites (0b00000000, 0b00000011); // h_mask, v_mask
+	stretch_sprites (0b00000000, 0b00000000); // h_mask, v_mask
 
 	set_sprite_enable_mask (0b00000011);
 	set_sprite_coordinates (0, 64, 64);
@@ -103,7 +103,9 @@ int main (void)
 		set_sprite_coordinates (0, player_one.pos_x, player_one.pos_y);
 		set_sprite_coordinates (1, player_two.pos_x, player_two.pos_y);
 		gotoxy (1, 1);
-		cprintf("R: %d", get_raster());
+		cprintf("R: %d", PEEK(SPRITE_X_COORD_MSB));
+		gotoxy (1, 2);
+		cprintf("P: %d", player_one.pos_x);		
 	}
 
 	joy_uninstall ();
