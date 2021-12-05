@@ -60,14 +60,27 @@ void load_sprite_to_block (unsigned char *sprite, unsigned char blockno)
   }
 }
 
-void set_sprite_enable_mask (unsigned char mask)
-{
-  POKE(VRAM_START + 21, mask);
-}
-
 void set_sprite_from_block (unsigned char spriteno, unsigned char blockno)
 {
   POKE(SPRITE_POINT_START + spriteno, blockno); // set sprite pointer
+}
+
+void set_sprite_enable_mask (unsigned char mask)
+{
+  POKE(SPRITES_ENABLED, mask);
+}
+
+void enable_sprite (unsigned char spriteno, bool enabled )
+{
+  unsigned char sprite_enable_mask;
+  sprite_enable_mask = PEEK(SPRITES_ENABLED);
+  if (enabled) {
+    sprite_enable_mask |= 1UL << spriteno;
+  }
+  else {
+    sprite_enable_mask &= ~(1UL << spriteno);
+  }
+  set_sprite_enable_mask (sprite_enable_mask);
 }
 
 /*
@@ -88,19 +101,17 @@ void set_sprite_from_block (unsigned char spriteno, unsigned char blockno)
   address 53264/$D010; the least significant bit here corresponds to sprite #0.
 */
 
-unsigned char sprite_pos_x_mask = 0x00;
-
 void set_sprite_coordinates (unsigned char spriteno, int pos_x, unsigned char pos_y)
 {
+  unsigned char sprite_pos_x_mask;
+  sprite_pos_x_mask = PEEK(SPRITE_X_COORD_MSB);
   if (pos_x > 255) {
     sprite_pos_x_mask |= 1UL << spriteno;
   }
   else {
     sprite_pos_x_mask &= ~(1UL << spriteno);
   }
-
   POKE(SPRITE_X_COORD_MSB, sprite_pos_x_mask);
-
   POKE(VRAM_START + spriteno*2,     pos_x & 0xFF);
   POKE(VRAM_START + (spriteno*2)+1, pos_y);
 }
@@ -159,17 +170,41 @@ void stretch_sprites (unsigned char h_mask, unsigned char v_mask)
   POKE(STRETCH_SPRITE_V, v_mask);
 }
 
+void stretch_sprite (unsigned char spriteno, bool horizontal, bool vertical)
+{
+  unsigned char h_mask = 0x00;
+  unsigned char v_mask = 0x00;
+
+  h_mask = PEEK(STRETCH_SPRITE_H);
+  v_mask = PEEK(STRETCH_SPRITE_V);
+
+  if (horizontal) {
+    h_mask |= 1UL << spriteno;
+  }
+  else {
+    h_mask &= ~(1UL << spriteno);
+  }
+
+  if (vertical) {
+    v_mask |= 1UL << spriteno;
+  }
+  else {
+    v_mask &= ~(1UL << spriteno);
+  }
+  stretch_sprites (h_mask, v_mask);
+}
+
 /*
   Through manipulating the bits in address 53275/$D01B,
   sprites can be set to appear "behind" (bits set to "1") or "in front of" (bits set to "0") background graphics.
   The least significant bit affects sprite #0, and the most sigificant bit sprite #7.
 */
 
-void set_sprite_priority (unsigned char mask){
+void set_sprite_priority_mask (unsigned char mask)
+{
   POKE(SPRITE_PRIORITY, mask);
 }
 
-// TODO
 /*
   Polling for collisions
   There are two VIC registers that can be polled to see if a collision involving sprites have occured:
@@ -177,7 +212,35 @@ void set_sprite_priority (unsigned char mask){
   Sprites involved in a collision with other sprites will have their respective bits set to "1" in address 53278/$D01E – all other sprites will have a "0" bit here.
   Sprites involved in a collision with background graphics will have their respective bits set to "1" in address 53279/$D01F – all other sprites will report a "0".
   As with all other "one bit per sprite" registers, the least significant bit affects sprite #0, and the most sigificant bit sprite #7.
+*/
 
+unsigned char get_sprite_collision_mask ()
+{
+  return PEEK(SPRITE_SP_COLLISON);
+}
+
+unsigned char get_background_collision_mask ()
+{
+  return PEEK(SPRITE_BG_COLLISION);
+}
+
+bool sprite_collision (unsigned char spriteno)
+{
+  bool collision = false;
+  collision = CHECK_BIT(get_sprite_collision_mask(), spriteno);
+  return collision;
+}
+
+bool background_collision (unsigned char spriteno)
+{
+  bool collision = false;
+  collision = CHECK_BIT(get_background_collision_mask(), spriteno);
+  return collision;
+}
+
+// TODO
+
+/*
   Interrupt on collision
   Both the interrupt event register (at address 53273/$D019) and interrupt enable register (at address 53274/$D01A) have provisions for raising IRQ-type interrupts at the CPU whenever collisions occur:
 

@@ -17,7 +17,7 @@ struct player player_two;
 
 unsigned char screen_size_x, screen_size_y;
 
-static const char title [] = "BattlePong!";
+static const char title [] = "[BattlePong]";
 
 void poll_joysticks (void)
 {
@@ -37,24 +37,15 @@ void poll_joysticks (void)
 
 void draw_field (void)
 {
-	/* Top line */
 	cputc (CH_ULCORNER);
 	chline (screen_size_x - 2);
 	cputc (CH_URCORNER);
-
-	/* Vertical line, left side */
 	cvlinexy (0, 1, screen_size_y - 2);
-
-	/* Bottom line */
 	cputc (CH_LLCORNER);
 	chline (screen_size_x - 2);
 	cputc (CH_LRCORNER);
-
-	/* Vertical line, right side */
 	cvlinexy (screen_size_x - 1, 1, screen_size_y - 2);
-
-	/* Write the greeting in the mid of the screen */
-	gotoxy ((screen_size_x - strlen (title)) / 2, screen_size_y / 2);
+	gotoxy ((screen_size_x - strlen (title)) / 2, 0);
 	cprintf ("%s", title);
 }
 
@@ -84,16 +75,13 @@ int main (void)
 	stretch_sprites (0b00000000, 0b00000000); // h_mask, v_mask
 
 	set_sprite_enable_mask (0b00000011);
-	set_sprite_coordinates (0, 64, 64);
-	set_sprite_coordinates (1, 64, 64);
 
-	set_sprite_priority (0b00000001);
+	set_sprite_priority_mask (0b00000001);
 
-	player_two.pos_x = 128;
-	player_two.pos_y = 64;
-
-	player_one.pos_x = 64;
-	player_one.pos_y = 64;
+	player_one.pos_x = 300;
+	player_one.pos_y = 140;
+	player_two.pos_x = 40;
+	player_two.pos_y = 140;
 
 	draw_field();
 
@@ -102,10 +90,15 @@ int main (void)
 		poll_joysticks();
 		set_sprite_coordinates (0, player_one.pos_x, player_one.pos_y);
 		set_sprite_coordinates (1, player_two.pos_x, player_two.pos_y);
-		gotoxy (1, 1);
-		cprintf("R: %d", PEEK(SPRITE_X_COORD_MSB));
-		gotoxy (1, 2);
-		cprintf("P: %d", player_one.pos_x);		
+		gotoxy (1, 23);
+		cprintf("P: %d", player_one.pos_x);
+		stretch_sprite(0, false, (JOY_FIRE (player_one.joy)));
+		if (sprite_collision(0)) {
+			set_border_color (COLOR_WHITE);
+		}
+		else {
+			set_border_color (COLOR_BLUE);
+		}
 	}
 
 	joy_uninstall ();
