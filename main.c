@@ -87,6 +87,8 @@ int main (void)
 	set_sprite_coordinates (0, 64, 64);
 	set_sprite_coordinates (1, 64, 64);
 
+	set_sprite_priority (0b00000001);
+
 	player_two.pos_x = 128;
 	player_two.pos_y = 64;
 

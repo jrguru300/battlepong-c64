@@ -14,9 +14,6 @@ void set_background_color (unsigned char color)
 void set_border_color (unsigned char color)
 {
   bordercolor ( color );
-  // unsigned char *bg;
-  // bg = (unsigned char *) BORDER_COLOR;
-  // *bg = color;
 }
 
 void set_text_color (unsigned char color)
@@ -27,6 +24,11 @@ void set_text_color (unsigned char color)
 unsigned char get_raster (void)
 {
   return PEEK(RASTER_ADDRESS);
+}
+
+void raster_wait(unsigned char line) {
+	unsigned char raster;
+	do { raster = get_raster(); } while (raster < line);
 }
 
 void clear_screen (void)
@@ -58,7 +60,6 @@ void load_sprite_to_block (unsigned char *sprite, unsigned char blockno)
   }
 }
 
-
 void set_sprite_enable_mask (unsigned char mask)
 {
   POKE(VRAM_START + 21, mask);
@@ -79,6 +80,12 @@ void set_sprite_from_block (unsigned char spriteno, unsigned char blockno)
   #5	53258/$D00A   53259/$D00B
   #6	53260/$D00C   53261/$D00D
   #7	53262/$D00E   53263/$D00F
+*/
+
+/*
+  The x coordinate addresses given in the table only holds the eight least significant bits of the x coordinates
+  for the respective sprites. The ninth and most significant bit for each of the eight sprites are "gathered" in
+  address 53264/$D010; the least significant bit here corresponds to sprite #0.
 */
 
 void set_sprite_coordinates (unsigned char spriteno, unsigned char pos_x, unsigned char pos_y)
@@ -141,14 +148,17 @@ void stretch_sprites (unsigned char h_mask, unsigned char v_mask)
   POKE(STRETCH_SPRITE_V, v_mask);
 }
 
-// TODO
-
 /*
   Through manipulating the bits in address 53275/$D01B,
   sprites can be set to appear "behind" (bits set to "1") or "in front of" (bits set to "0") background graphics.
   The least significant bit affects sprite #0, and the most sigificant bit sprite #7.
 */
 
+void set_sprite_priority (unsigned char mask){
+  POKE(SPRITE_PRIORITY, mask);
+}
+
+// TODO
 /*
   Polling for collisions
   There are two VIC registers that can be polled to see if a collision involving sprites have occured:
