@@ -50,6 +50,7 @@ void draw_field (void)
 }
 
 bool anim_sprite = false;
+int ball_x = 0;
 
 int main (void)
 {
@@ -59,9 +60,17 @@ int main (void)
 	screensize (&screen_size_x, &screen_size_y);
 	clear_screen ();
 
-	set_sprite_mode_mask(0b00000011);
+	// multicolor sprites
+	set_sprite_mode_mask(0b00000111);
+
+	// common colors for all multicolor sprites
 	set_sprite_color_0 (COLOR_BLUE);
 	set_sprite_color_1 (COLOR_ORANGE);
+
+	// individual colors of sprites
+	set_sprite_color (0, COLOR_WHITE);
+	set_sprite_color (1, COLOR_CYAN);
+	set_sprite_color (2, COLOR_CYAN);
 
 	set_text_color (COLOR_WHITE);
 	set_border_color (COLOR_BLUE);
@@ -69,15 +78,15 @@ int main (void)
 
   load_sprite_to_block 	 (spacefox_sprite_0, 13);
 	load_sprite_to_block 	 (spacefox_sprite_1, 14);
+	load_sprite_to_block 	 (ball_sprite, 15);
   set_sprite_from_block  (0, 13);
 	set_sprite_from_block  (1, 14);
+	set_sprite_from_block  (2, 15);
 
-	set_sprite_color (0, COLOR_WHITE);
-	set_sprite_color (1, COLOR_CYAN);
 
-	stretch_sprites (0b00000000, 0b00000000); // h_mask, v_mask
-	set_sprite_enable_mask (0b00000011);
-	set_sprite_priority_mask (0b00000001);
+	stretch_sprites (0b00000000, 0b00000000); // 1 - stretched on (h_mask, v_mask)
+	set_sprite_enable_mask (0b00000111); // 1 - enabled
+	set_sprite_priority_mask (0b00000000); // 1 - behind background
 
 	player_one.pos_x = 300;
 	player_one.pos_y = 140;
@@ -104,8 +113,13 @@ int main (void)
 			}
 		}
 
+		set_sprite_coordinates (2, ball_x, 128);
+		ball_x++; if (ball_x>366) ball_x = 0;
+
 		stretch_sprite(0, false, (JOY_FIRE (player_one.joy)));
-		if (sprite_collision(0)) {
+		stretch_sprite(1, false, (JOY_FIRE (player_two.joy)));
+
+		if (sprite_collision(2)) {
 			set_border_color (COLOR_WHITE);
 		}
 		else {
