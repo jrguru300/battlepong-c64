@@ -54,6 +54,10 @@ void poll_joysticks (void)
 
 void draw_field (void)
 {
+	set_text_color(COLOR_LIGHT_BLUE);
+	fill_with_char(123, 0, 0, 39, 24);
+	gotoxy(0,0);
+	set_text_color(COLOR_BLACK);
 	cputc (CH_ULCORNER);
 	chline (screen_size_x - 2);
 	cputc (CH_URCORNER);
@@ -85,8 +89,8 @@ void animate_players ()
 			set_sprite_from_block  (PLAYER_TWO, 14);
 		}
 	}
-	stretch_sprite(PLAYER_ONE, false, (JOY_FIRE (player_one.joy)));
-	stretch_sprite(PLAYER_TWO, false, (JOY_FIRE (player_two.joy)));
+	// stretch_sprite(PLAYER_ONE, false, (JOY_FIRE (player_one.joy)));
+	// stretch_sprite(PLAYER_TWO, false, (JOY_FIRE (player_two.joy)));
 	set_sprite_coordinates (PLAYER_ONE, player_one.pos_x, player_one.pos_y);
 	set_sprite_coordinates (PLAYER_TWO, player_two.pos_x, player_two.pos_y);
 }
@@ -152,17 +156,16 @@ int main (void)
 	set_sprite_mode_mask(0b00000111);
 
 	// common colors for all multicolor sprites
-	set_sprite_color_0 (COLOR_RED);
+	set_sprite_color_0 (COLOR_BLACK);
 	set_sprite_color_1 (COLOR_ORANGE);
 
 	// individual colors of sprites
 	set_sprite_color (PLAYER_ONE, COLOR_WHITE);
-	set_sprite_color (PLAYER_TWO, COLOR_CYAN);
+	set_sprite_color (PLAYER_TWO, COLOR_DARK_GREY);
 	set_sprite_color (BALL, COLOR_YELLOW);
 
-	set_text_color (COLOR_WHITE);
-	set_border_color (COLOR_BLUE);
-	set_background_color (COLOR_BLACK);
+	set_border_color (COLOR_BLACK);
+	set_background_color (COLOR_BLUE);
 
   load_sprite_to_block 	 (spacefox_sprite_0, 13);
 	load_sprite_to_block 	 (spacefox_sprite_1, 14);
@@ -171,7 +174,7 @@ int main (void)
 	set_sprite_from_block  (PLAYER_TWO, 14);
 	set_sprite_from_block  (BALL, 15);
 
-	stretch_sprites (0b00000000, 0b00000000); // 1 - stretched on (h_mask, v_mask)
+	stretch_sprites (0b00000000, 0b00000011); // 1 - stretched on (h_mask, v_mask)
 	set_sprite_enable_mask (0b00000111); // 1 - enabled
 	set_sprite_priority_mask (0b00000000); // 1 - behind background
 
@@ -180,6 +183,7 @@ int main (void)
 	player_two.pos_x = 300; // edge at 310
 	player_two.pos_y = 140;
 
+	// enable_multicolor_chars(true);
 	draw_field();
 
   while (1)

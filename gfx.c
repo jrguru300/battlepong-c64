@@ -21,6 +21,52 @@ void set_text_color (unsigned char color)
   textcolor ( color );
 }
 
+/*
+  Depending on the bit-pair combination, the color of each pixel will be:
+
+  Transparent, or "background" if the bit pair is "00"
+  The color indicated in address 53282/$D022 where the bit pair is "01"
+  The color indicated in address 53283/$D023 where the bit pair is "10"
+  The character's individual color (55296–56295/$D800–DBE7) where the bit pair is "11"
+
+  The text screen in multicolor mode uses the most significant of the four bits in each character's
+  individual color: This means that the screen can display both multicolor and high resolution
+  characters side-by-side, but the disadvantage is that the individual color for each multicolor character
+  can only be chosen from the second half (color codes 8 thru 15) of the normal 16-color palette.
+
+  The two colors stored in 53282/$D022 and 53283/$D023 are common for all multicolor characters on screen,
+  but may assume any of the 16 available color codes.
+*/
+
+void enable_multicolor_chars (bool enable)
+{
+  if (enable){
+    POKE(CHAR_MULTICOLOR, PEEK(CHAR_MULTICOLOR) | 0x10);
+  }
+  else {
+    POKE(CHAR_MULTICOLOR, PEEK(CHAR_MULTICOLOR) & 0xEF);
+  }
+}
+
+void set_character_color_0  (unsigned char color)
+{
+  POKE(CHAR_COMMON_C_1, color); // 01
+}
+
+void set_character_color_1  (unsigned char color)
+{
+  POKE(CHAR_COMMON_C_2, color); // 10
+}
+
+void set_character_color (unsigned char color)
+{
+  // TODO: set char individual color $D800–DBE7
+}
+
+/*
+  Display operations
+*/
+
 unsigned char get_raster (void)
 {
   return PEEK(RASTER_ADDRESS);
@@ -34,6 +80,18 @@ void raster_wait(unsigned char line) {
 void clear_screen (void)
 {
   clrscr ();
+}
+
+void fill_with_char (unsigned char c, unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y)
+{
+  unsigned char x = 0;
+  unsigned char y = 0;
+  for (x = from_x; x < to_x; x++){
+    for (y = from_y; y < to_y; y++){
+      gotoxy (x,y);
+      cputc (c);
+    }
+  }
 }
 
 /* https://www.c64-wiki.com/wiki/Sprite */

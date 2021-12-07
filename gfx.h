@@ -3,24 +3,23 @@
 
 #include <stdbool.h>
 
-/*
-  COLOR_BLACK         0
-  COLOR_WHITE         1
-  COLOR_RED           2
-  COLOR_CYAN          3
-  COLOR_MAGENTA       4
-  COLOR_GREEN         5
-  COLOR_BLUE          6
-  COLOR_YELLOW        7
-  COLOR_ORANGE        8
-  COLOR_BROWN         9
-  COLOR_PINK          10
-  COLOR_DARKGREY      11
-  COLOR_GREY          12
-  COLOR_LIGHTGREEN    13
-  COLOR_LIGHTBLUE     14
-  COLOR_LIGHTGREY     15
-*/
+// #define COLOR_BLACK         0
+// #define COLOR_WHITE         1
+// #define COLOR_RED           2
+// #define COLOR_CYAN          3
+// #define COLOR_MAGENTA       4
+// #define COLOR_GREEN         5
+// #define COLOR_BLUE          6
+// #define COLOR_YELLOW        7
+// #define COLOR_ORANGE        8
+// #define COLOR_BROWN         9
+
+#define COLOR_PINK          10
+#define COLOR_DARK_GREY     11
+#define COLOR_GREY          12
+#define COLOR_LIGHT_GREEN   13
+#define COLOR_LIGHT_BLUE    14
+#define COLOR_LIGHT_GREY    15
 
 /* https://www.c64-wiki.com/wiki/Screen_RAM */
 #define VRAM_START          0xD000
@@ -28,6 +27,10 @@
 #define BORDER_COLOR        0xD020
 #define BACKGROUND_COLOR    0xD021
 #define SPRITES_ENABLED     0xD015
+#define CHAR_MULTICOLOR     0xD016
+#define CHAR_COMMON_C_1     0xD022
+#define CHAR_COMMON_C_2     0xD023
+
 #define STRETCH_SPRITE_V    0xD017
 #define STRETCH_SPRITE_H    0xD01D
 #define SPRITE_X_COORD_MSB  0xD010
@@ -61,6 +64,11 @@ void set_sprite_enable_mask (unsigned char mask);
 void enable_sprite          (unsigned char spriteno, bool enabled );
 void set_sprite_coordinates (unsigned char spriteno, int pos_x, unsigned char pos_y);
 void set_sprite_priority_mask (unsigned char mask);
+void enable_multicolor_chars (bool enable);
+void set_character_color_0  (unsigned char color);
+void set_character_color_1  (unsigned char color);
+void set_character_color    (unsigned char color);
+void fill_with_char (unsigned char c, unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y);
 
 unsigned char get_raster    (void);
 unsigned char get_sprite_collision_mask (void);
