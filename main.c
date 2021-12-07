@@ -49,6 +49,8 @@ void draw_field (void)
 	cprintf ("%s", title);
 }
 
+bool anim_sprite = false;
+
 int main (void)
 {
 
@@ -65,17 +67,16 @@ int main (void)
 	set_border_color (COLOR_BLUE);
 	set_background_color (COLOR_BLACK);
 
-  load_sprite_to_block 	 (spacefox_sprite, 13);
+  load_sprite_to_block 	 (spacefox_sprite_0, 13);
+	load_sprite_to_block 	 (spacefox_sprite_1, 14);
   set_sprite_from_block  (0, 13);
-	set_sprite_from_block  (1, 13);
+	set_sprite_from_block  (1, 14);
 
 	set_sprite_color (0, COLOR_WHITE);
 	set_sprite_color (1, COLOR_CYAN);
 
 	stretch_sprites (0b00000000, 0b00000000); // h_mask, v_mask
-
 	set_sprite_enable_mask (0b00000011);
-
 	set_sprite_priority_mask (0b00000001);
 
 	player_one.pos_x = 300;
@@ -90,8 +91,19 @@ int main (void)
 		poll_joysticks();
 		set_sprite_coordinates (0, player_one.pos_x, player_one.pos_y);
 		set_sprite_coordinates (1, player_two.pos_x, player_two.pos_y);
-		gotoxy (1, 23);
-		cprintf("P: %d", player_one.pos_x);
+
+		if (get_raster()==255){
+			anim_sprite=!anim_sprite;
+			if (anim_sprite){
+				set_sprite_from_block  (1, 13);
+				set_sprite_from_block  (0, 14);
+			}
+			else {
+				set_sprite_from_block  (1, 14);
+				set_sprite_from_block  (0, 13);
+			}
+		}
+
 		stretch_sprite(0, false, (JOY_FIRE (player_one.joy)));
 		if (sprite_collision(0)) {
 			set_border_color (COLOR_WHITE);
