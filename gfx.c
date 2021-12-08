@@ -63,6 +63,16 @@ void set_character_color (unsigned char color)
   // TODO: set char individual color $D800–DBE7
 }
 
+void poke_char_to (unsigned char c, char x, unsigned char y)
+{
+  POKE(1024+y*40+x, c);
+}
+
+void text_reverse (bool enable)
+{
+  POKE(0xC7, enable);
+}
+
 void change_character_set (unsigned char set)
 {
   switch (set){

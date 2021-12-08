@@ -50,21 +50,20 @@ void poll_joysticks (void)
 	player_two.pos_y = constrain_char(player_two.pos_y, 50, 230);
 }
 
-/* Draw the character based play field */
-
-void load_title ()
-{
-  unsigned char n;
-  gotoxy(0,0);
-  for (n=0; n<3*40; n++){
-    cputc(title[n]);
-  }
-}
+/* Draw title screen */
 
 void draw_title ()
 {
-	load_title();
+	unsigned char n, i;
+
+	for (i=0; i<4; i++){
+		for (n=0; n<40; n++){
+			poke_char_to(title[i*40+n], n, i);
+		}
+	}
 }
+
+/* Draw the character based play field */
 
 void draw_field (void)
 {
@@ -81,8 +80,6 @@ void draw_field (void)
 	cputc (CH_LRCORNER);
 	cvlinexy (screen_size_x - 1, 1, screen_size_y - 2);
 	cvlinexy (screen_size_x/2, 2, screen_size_y - 4);
-	//gotoxy(0,2);
-	//cputc (CH_LTEE);
 }
 
 /* Player animations and sprite streching */
@@ -103,12 +100,6 @@ void animate_players ()
 			set_sprite_from_block  (PLAYER_TWO, 14);
 		}
 	}
-	// stretch_sprite(PLAYER_ONE, false, (JOY_FIRE (player_one.joy)));
-
-	// DEBUG
-	if ((JOY_FIRE (player_two.joy))) {change_character_set(1);} else {change_character_set(2);}
-	//
-
 	set_sprite_coordinates (PLAYER_ONE, player_one.pos_x, player_one.pos_y);
 	set_sprite_coordinates (PLAYER_TWO, player_two.pos_x, player_two.pos_y);
 }
@@ -201,10 +192,7 @@ int main (void)
 	player_two.pos_x = 300; // edge at 310
 	player_two.pos_y = 140;
 
-
-	/*
-
-	enable_multicolor_chars(true);
+	//enable_multicolor_chars(true);
 
 	draw_title();
 
@@ -212,8 +200,6 @@ int main (void)
 	{
 		poll_joysticks();
 	}
-
-	*/
 
 	draw_field();
 

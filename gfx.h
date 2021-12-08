@@ -22,6 +22,7 @@
 #define COLOR_LIGHT_GREY    15
 
 /* https://www.c64-wiki.com/wiki/Screen_RAM */
+
 #define VRAM_START          0xD000
 #define RASTER_ADDRESS      0xD012
 #define BORDER_COLOR        0xD020
@@ -71,6 +72,8 @@ void set_character_color    (unsigned char color);
 void fill_with_char (unsigned char c, unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y);
 void load_char_array (unsigned char *array);
 void change_character_set   (unsigned char set);
+void poke_char_to (unsigned char c, char x, unsigned char y);
+void text_reverse (bool enable);
 
 unsigned char get_raster    (void);
 unsigned char get_sprite_collision_mask (void);
