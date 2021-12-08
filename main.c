@@ -12,6 +12,7 @@
 #include "spritedata.h"
 #include "players.h"
 #include "utils.h"
+#include "title.h"
 
 struct player player_one;
 struct player player_two;
@@ -20,11 +21,10 @@ struct player player_two;
 #define PLAYER_TWO 1
 #define BALL			 2
 
-#define PLAYER_SPEED 2
+#define PLAYER_V_SPEED 2
+#define PLAYER_H_SPEED 1
 
 unsigned char screen_size_x, screen_size_y;
-
-static const char title [] = "[BattlePong]";
 
 /* Read CIA joystick registers and apply to player behaviour */
 
@@ -33,15 +33,15 @@ void poll_joysticks (void)
 	player_one.joy = joy_read(JOY_1);
 	player_two.joy = joy_read(JOY_2);
 
-	if (JOY_UP    (player_one.joy)) player_one.pos_y-=PLAYER_SPEED;
-	if (JOY_DOWN  (player_one.joy)) player_one.pos_y+=PLAYER_SPEED;
-	if (JOY_LEFT  (player_one.joy)) player_one.pos_x-=PLAYER_SPEED;
-	if (JOY_RIGHT (player_one.joy)) player_one.pos_x+=PLAYER_SPEED;
+	if (JOY_UP    (player_one.joy)) player_one.pos_y-=PLAYER_V_SPEED;
+	if (JOY_DOWN  (player_one.joy)) player_one.pos_y+=PLAYER_V_SPEED;
+	if (JOY_LEFT  (player_one.joy)) player_one.pos_x-=PLAYER_H_SPEED;
+	if (JOY_RIGHT (player_one.joy)) player_one.pos_x+=PLAYER_H_SPEED;
 
-	if (JOY_UP    (player_two.joy)) player_two.pos_y-=PLAYER_SPEED;
-	if (JOY_DOWN  (player_two.joy)) player_two.pos_y+=PLAYER_SPEED;
-	if (JOY_LEFT  (player_two.joy)) player_two.pos_x-=PLAYER_SPEED;
-	if (JOY_RIGHT (player_two.joy)) player_two.pos_x+=PLAYER_SPEED;
+	if (JOY_UP    (player_two.joy)) player_two.pos_y-=PLAYER_V_SPEED;
+	if (JOY_DOWN  (player_two.joy)) player_two.pos_y+=PLAYER_V_SPEED;
+	if (JOY_LEFT  (player_two.joy)) player_two.pos_x-=PLAYER_H_SPEED;
+	if (JOY_RIGHT (player_two.joy)) player_two.pos_x+=PLAYER_H_SPEED;
 
 	player_one.pos_x = constrain_int(player_one.pos_x, 30, 140);
 	player_two.pos_x = constrain_int(player_two.pos_x, 200, 315);
@@ -51,6 +51,20 @@ void poll_joysticks (void)
 }
 
 /* Draw the character based play field */
+
+void load_title ()
+{
+  unsigned char n;
+  gotoxy(0,0);
+  for (n=0; n<3*40; n++){
+    cputc(title[n]);
+  }
+}
+
+void draw_title ()
+{
+	load_title();
+}
 
 void draw_field (void)
 {
@@ -66,9 +80,9 @@ void draw_field (void)
 	chline (screen_size_x - 2);
 	cputc (CH_LRCORNER);
 	cvlinexy (screen_size_x - 1, 1, screen_size_y - 2);
-	gotoxy ((screen_size_x - strlen (title)) / 2, 0);
-	cprintf ("%s", title);
 	cvlinexy (screen_size_x/2, 2, screen_size_y - 4);
+	//gotoxy(0,2);
+	//cputc (CH_LTEE);
 }
 
 /* Player animations and sprite streching */
@@ -90,7 +104,11 @@ void animate_players ()
 		}
 	}
 	// stretch_sprite(PLAYER_ONE, false, (JOY_FIRE (player_one.joy)));
-	// stretch_sprite(PLAYER_TWO, false, (JOY_FIRE (player_two.joy)));
+
+	// DEBUG
+	if ((JOY_FIRE (player_two.joy))) {change_character_set(1);} else {change_character_set(2);}
+	//
+
 	set_sprite_coordinates (PLAYER_ONE, player_one.pos_x, player_one.pos_y);
 	set_sprite_coordinates (PLAYER_TWO, player_two.pos_x, player_two.pos_y);
 }
@@ -161,10 +179,10 @@ int main (void)
 
 	// individual colors of sprites
 	set_sprite_color (PLAYER_ONE, COLOR_WHITE);
-	set_sprite_color (PLAYER_TWO, COLOR_DARK_GREY);
-	set_sprite_color (BALL, COLOR_YELLOW);
+	set_sprite_color (PLAYER_TWO, COLOR_WHITE);
+	set_sprite_color (BALL, COLOR_WHITE);
 
-	set_border_color (COLOR_BLACK);
+	set_border_color (COLOR_BLUE);
 	set_background_color (COLOR_BLUE);
 
   load_sprite_to_block 	 (spacefox_sprite_0, 13);
@@ -183,7 +201,20 @@ int main (void)
 	player_two.pos_x = 300; // edge at 310
 	player_two.pos_y = 140;
 
-	// enable_multicolor_chars(true);
+
+	/*
+
+	enable_multicolor_chars(true);
+
+	draw_title();
+
+	while (!(JOY_FIRE (player_two.joy)))
+	{
+		poll_joysticks();
+	}
+
+	*/
+
 	draw_field();
 
   while (1)

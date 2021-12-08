@@ -30,7 +30,7 @@
 #define CHAR_MULTICOLOR     0xD016
 #define CHAR_COMMON_C_1     0xD022
 #define CHAR_COMMON_C_2     0xD023
-
+#define CHARACTER_SET       0xD018
 #define STRETCH_SPRITE_V    0xD017
 #define STRETCH_SPRITE_H    0xD01D
 #define SPRITE_X_COORD_MSB  0xD010
@@ -69,6 +69,8 @@ void set_character_color_0  (unsigned char color);
 void set_character_color_1  (unsigned char color);
 void set_character_color    (unsigned char color);
 void fill_with_char (unsigned char c, unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y);
+void load_char_array (unsigned char *array);
+void change_character_set   (unsigned char set);
 
 unsigned char get_raster    (void);
 unsigned char get_sprite_collision_mask (void);

@@ -63,6 +63,23 @@ void set_character_color (unsigned char color)
   // TODO: set char individual color $D800–DBE7
 }
 
+void change_character_set (unsigned char set)
+{
+  switch (set){
+
+    case 1:
+      POKE(CHARACTER_SET, 23);
+    break;
+
+    case 2:
+      POKE(CHARACTER_SET, 21);
+    break;
+
+    default:
+    break;
+  }
+}
+
 /*
   Display operations
 */
