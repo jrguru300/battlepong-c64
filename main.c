@@ -21,11 +21,14 @@ const char player_name[5][5] = {"Zero", "Nick", "Yodh", "Iris", "Pong"};
 const char help_line_1[] = "F1 | JOY1 to select player one";
 const char help_line_2[] = "F2 | JOY2 to select player two";
 const char help_line_3[] = "PRESS FIRE TO START!";
+char score[] = "0:0";
 
 #define PLAYER_ONE 0
 #define PLAYER_TWO 1
 #define BALL			 2
 
+#define NUM_OF_LIVES 	 5
+#define LOSS_TO_LIFE	 2
 #define PLAYER_V_SPEED 2
 #define PLAYER_H_SPEED 1
 
@@ -48,7 +51,7 @@ void poll_joysticks (void)
 	if (JOY_LEFT  (player_two.joy)) player_two.pos_x-=PLAYER_H_SPEED;
 	if (JOY_RIGHT (player_two.joy)) player_two.pos_x+=PLAYER_H_SPEED;
 
-	player_one.pos_x = constrain_int(player_one.pos_x, 30, 140);
+	player_one.pos_x = constrain_int(player_one.pos_x, 30, 150);
 	player_two.pos_x = constrain_int(player_two.pos_x, 200, 315);
 
 	player_one.pos_y = constrain_char(player_one.pos_y, 50, 230);
@@ -77,10 +80,10 @@ void draw_title ()
 	printf("%s", help_line_1);
 	gotoxy(screen_size_x/2-strlen(help_line_2)/2, 21);
 	printf("%s", help_line_2);
-	gotoxy(screen_size_x/2-strlen(help_line_3)/2, 24);
-	printf("%s", help_line_3);
 
 	set_text_color(COLOR_WHITE);
+	gotoxy(screen_size_x/2-strlen(help_line_3)/2, 24);
+	printf("%s", help_line_3);
 	gotoxy(19, 10);
 	printf("VS.");
 
@@ -122,35 +125,120 @@ void draw_title ()
 
 		set_sprite_color (PLAYER_ONE, i);
 		gotoxy(7,16);
-		printf("%s",player_name[i-1]);
+		player_one.id = i-1;
+		printf("%s",player_name[player_one.id]);
 
 		set_sprite_color (PLAYER_TWO, n);
 		gotoxy(29,16);
-		printf("%s",player_name[n-1]);
+		player_two.id = n-1;
+		printf("%s",player_name[player_two.id]);
 
 		player_one.last_joy = player_one.joy;
 		player_two.last_joy = player_two.joy;
 	}
 
+	clear_screen();
 }
 
 /* Draw the character based play field */
 
+void game_over()
+{
+	set_sprite_enable_mask (0b00000000);
+	set_text_color(COLOR_WHITE);
+	fill_with_char(0x20, 17, 7, 24, 15);
+	character_box (16, 7, 7, 7);
+	gotoxy(17, 16);
+	printf("WINNER!");
+
+	if (player_one.score>player_two.score){
+		set_sprite_coordinates (PLAYER_ONE, 176, 123);
+		enable_sprite(PLAYER_ONE, true);
+	}
+	else {
+		set_sprite_coordinates (PLAYER_TWO, 176, 123);
+		enable_sprite(PLAYER_TWO, true);
+	}
+
+	while (!(JOY_FIRE (player_two.joy)))
+	{
+		poll_joysticks();
+	}
+
+	// TODO: back to menu, restart, quit
+}
+
+void update_lives()
+{
+	unsigned char n;
+
+	player_one.life = NUM_OF_LIVES-(player_two.score/LOSS_TO_LIFE);
+	player_two.life = NUM_OF_LIVES-(player_one.score/LOSS_TO_LIFE);
+
+	if (player_one.life!=player_one.last_life)
+	{
+		gotoxy(6,1);
+		for (n=0; n<NUM_OF_LIVES; n++){
+			if (n<=player_one.life) set_text_color(COLOR_WHITE);
+			else set_text_color(COLOR_LIGHT_BLUE);
+			cputc(0xA1);
+		}
+	}
+
+	if (player_two.life!=player_two.last_life)
+	{
+		gotoxy(29,1);
+		for (n=0; n<NUM_OF_LIVES; n++){
+			if (n<=player_two.life) set_text_color(COLOR_WHITE);
+			else set_text_color(COLOR_LIGHT_BLUE);
+			cputc(0xA1);
+		}
+	}
+
+	if (player_two.life==0 || player_one.life==0) game_over();
+
+	player_one.last_life = player_one.life;
+	player_two.last_life = player_two.life;
+}
+
+void update_scores()
+{
+	if (player_one.score<10){
+		gotoxy(screen_size_x/2-1, 1);
+	}
+	else {
+		gotoxy(screen_size_x/2-2, 1);
+	}
+	set_text_color(COLOR_WHITE);
+	printf("%d:%d",player_one.score, player_two.score);
+	update_lives();
+}
+
 void draw_field (void)
 {
 	set_text_color(COLOR_LIGHT_BLUE);
-	fill_with_char(123, 0, 0, 39, 24);
-	gotoxy(0,0);
-	set_text_color(COLOR_BLACK);
-	cputc (CH_ULCORNER);
-	chline (screen_size_x - 2);
-	cputc (CH_URCORNER);
-	cvlinexy (0, 1, screen_size_y - 2);
-	cputc (CH_LLCORNER);
-	chline (screen_size_x - 2);
-	cputc (CH_LRCORNER);
-	cvlinexy (screen_size_x - 1, 1, screen_size_y - 2);
-	cvlinexy (screen_size_x/2, 2, screen_size_y - 4);
+	// field background
+	fill_with_char(123, 1, 1, 39, 25);
+	// field frame
+	set_text_color(COLOR_WHITE);
+	fill_with_char(0xAB, 1, 3, 2, 25);
+	fill_with_char(0xB3, screen_size_x-1, 3, screen_size_x, 25);
+	// fill_with_char(0xB1, 2, 24, screen_size_x-1, 25);
+	// player brackets
+	fill_with_char(0x20, 1, 1, 11, 2);
+	character_box (0, 0, 10, 1);
+	fill_with_char(0x20, 29, 1, 39, 2);
+	character_box (28, 0, 10, 1);
+	// score box
+	fill_with_char(0x20, 17, 1, 24, 2);
+	character_box (16, 0, 7, 1);
+	// display player names
+	gotoxy(1,1);
+	printf("%s",player_name[player_one.id]);
+	gotoxy(screen_size_x-strlen(player_name[player_two.id])-1,1);
+	printf("%s",player_name[player_two.id]);
+	// display initial scores
+	update_scores();
 }
 
 /* Player animations and sprite streching */
@@ -163,12 +251,12 @@ void animate_players ()
 	{
 		anim_players=!anim_players;
 		if (anim_players){
-			set_sprite_from_block  (PLAYER_ONE, 14);
-			set_sprite_from_block  (PLAYER_TWO, 13);
+			set_sprite_from_block (PLAYER_ONE, 14);
+			set_sprite_from_block (PLAYER_TWO, 13);
 		}
 		else {
-			set_sprite_from_block  (PLAYER_ONE, 13);
-			set_sprite_from_block  (PLAYER_TWO, 14);
+			set_sprite_from_block (PLAYER_ONE, 13);
+			set_sprite_from_block (PLAYER_TWO, 14);
 		}
 	}
 	set_sprite_coordinates (PLAYER_ONE, player_one.pos_x, player_one.pos_y);
@@ -213,13 +301,30 @@ void move_ball()
 	else { // ball is traversing without collision
 		if (ball_x>320) { // ball is out on right side
 			ball_x_dir=!ball_x_dir; // reverse for now
+			player_one.score+=1;
+			update_scores();
 		}
 		if (ball_x<25) { // ball is out on left side
 			ball_x_dir=!ball_x_dir; // reverse for now
+			player_two.score+=1;
+			update_scores();
 		}
 	}
 
 	set_sprite_coordinates (BALL, ball_x, ball_y);
+}
+
+void init_players()
+{
+	player_one.life	 = NUM_OF_LIVES;
+	player_one.score = 0;
+	player_one.pos_x = 84; // edge at 30
+	player_one.pos_y = 123;
+
+	player_two.life  = NUM_OF_LIVES;
+	player_two.score = 0;
+	player_two.pos_x = 260; // edge at 310
+	player_two.pos_y = 123;
 }
 
 /* Main game cycle */
@@ -255,14 +360,9 @@ int main (void)
 	stretch_sprites (0b00000000, 0b00000011); // 1 - stretched on (h_mask, v_mask)
 	set_sprite_enable_mask (0b00000111); // 1 - enabled
 	set_sprite_priority_mask (0b00000000); // 1 - behind background
-
-	player_one.pos_x = 84; // edge at 30
-	player_one.pos_y = 123;
-	player_two.pos_x = 260; // edge at 310
-	player_two.pos_y = 123;
-
 	//enable_multicolor_chars(true);
 
+	init_players();
 	draw_title();
 	draw_field();
 
@@ -271,7 +371,6 @@ int main (void)
 		poll_joysticks();
 		animate_players();
 		move_ball();
-		raster_wait(100); // TODO: change game speed according to level
 	}
 
 	joy_uninstall ();

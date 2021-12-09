@@ -58,10 +58,10 @@ void set_character_color_1  (unsigned char color)
   POKE(CHAR_COMMON_C_2, color); // 10
 }
 
-void set_character_color (unsigned char color)
-{
-  // TODO: set char individual color $D800–DBE7
-}
+// TODO: set char individual color $D800–DBE7
+// void set_character_color (unsigned char color)
+// {
+// }
 
 void poke_char_to (unsigned char c, char x, unsigned char y)
 {
