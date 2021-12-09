@@ -17,10 +17,12 @@
 struct player player_one;
 struct player player_two;
 
-const char player_name[5][5] = {"Zero", "Nick", "Yodh", "Iris", "Pong"};
 const char help_line_1[] = "F1 | JOY1 to select player one";
 const char help_line_2[] = "F2 | JOY2 to select player two";
 const char help_line_3[] = "PRESS FIRE TO START!";
+const char help_line_4[] = "Press FIRE for a re-match";
+
+const char player_name[5][5] = {"Zero", "Nick", "Yodh", "Iris", "Pong"};
 char score[] = "0:0";
 
 #define PLAYER_ONE 0
@@ -28,11 +30,47 @@ char score[] = "0:0";
 #define BALL			 2
 
 #define NUM_OF_LIVES 	 5
-#define LOSS_TO_LIFE	 2
+#define LOSS_TO_LIFE	 1
 #define PLAYER_V_SPEED 2
 #define PLAYER_H_SPEED 1
+#define GAME_RESTART	 0
+#define GAME_IS_ON	 	 1
+#define GAME_OVER	 		 2
+#define GAME_REMATCH	 4
+#define GAME_EXIT			 8
 
 unsigned char screen_size_x, screen_size_y;
+unsigned char game_state = 0;
+
+bool ball_x_dir = false;
+bool ball_y_dir = true;
+unsigned char ball_y = 140;
+int  ball_x = 128;
+
+/* PLAYERS */
+
+void reset_ball()
+{
+	ball_x = 180;
+	ball_y = 128;
+	set_sprite_coordinates (BALL, ball_x, ball_y);
+}
+
+void init_players()
+{
+	player_one.life	 = NUM_OF_LIVES;
+	player_one.score = 0;
+	player_one.pos_x = 84;
+	player_one.pos_y = 123;
+
+	player_two.life  = NUM_OF_LIVES;
+	player_two.score = 0;
+	player_two.pos_x = 260;
+	player_two.pos_y = 123;
+
+	game_state = GAME_IS_ON;
+	set_sprite_enable_mask (0b00000111);
+}
 
 /* Read CIA joystick registers and apply to player behaviour */
 
@@ -64,6 +102,7 @@ void draw_title ()
 {
 	unsigned char n, i;
 
+	set_text_color(COLOR_WHITE);
 	for (i=0; i<4; i++){
 		for (n=0; n<40; n++){
 			poke_char_to(title[i*40+n], n, i);
@@ -84,26 +123,26 @@ void draw_title ()
 	set_text_color(COLOR_WHITE);
 	gotoxy(screen_size_x/2-strlen(help_line_3)/2, 24);
 	printf("%s", help_line_3);
-	gotoxy(19, 10);
+	gotoxy(19, 11);
 	printf("VS.");
 
 	i = COLOR_WHITE;
 	n = COLOR_GREEN;
 
-	while (!(JOY_FIRE (player_two.joy)))
+	while (!(JOY_FIRE (player_two.joy)||(JOY_FIRE (player_one.joy))))
 	{
 		poll_joysticks();
 
 		// cycle through the players with function keys
 		switch (cbm_k_getin()) {
 			case 133: // F1
-			if (i>4) i = 1;
 			i++;
+			if (i>5) i = 1;
 			break;
 
 			case 137: // F2
-			if (n>4) n = 1;
 			n++;
+			if (n>5) n = 1;
 			break;
 
 			default:
@@ -140,16 +179,34 @@ void draw_title ()
 	clear_screen();
 }
 
-/* Draw the character based play field */
+/* GAME OVER */
 
 void game_over()
 {
+	game_state = GAME_OVER;
+	reset_ball();
 	set_sprite_enable_mask (0b00000000);
 	set_text_color(COLOR_WHITE);
 	fill_with_char(0x20, 17, 7, 24, 15);
 	character_box (16, 7, 7, 7);
 	gotoxy(17, 16);
 	printf("WINNER!");
+	gotoxy(screen_size_x/2-strlen(help_line_4)/2, 24);
+	printf("%s", help_line_4);
+
+	gotoxy(6, 20);
+	printf("[M]");
+	gotoxy(16, 20);
+	printf("[R]");
+	gotoxy(29, 20);
+	printf("[Q]");
+	set_text_color(COLOR_LIGHT_BLUE);
+	gotoxy(9, 20);
+	printf("enu");
+	gotoxy(19, 20);
+	printf("estart");
+	gotoxy(32, 20);
+	printf("uit");
 
 	if (player_one.score>player_two.score){
 		set_sprite_coordinates (PLAYER_ONE, 176, 123);
@@ -160,12 +217,27 @@ void game_over()
 		enable_sprite(PLAYER_TWO, true);
 	}
 
-	while (!(JOY_FIRE (player_two.joy)))
+	while (game_state==GAME_OVER)
 	{
 		poll_joysticks();
-	}
+		if (JOY_FIRE (player_two.joy) || JOY_FIRE (player_one.joy)) {
+			game_state = GAME_REMATCH;
+		}
 
-	// TODO: back to menu, restart, quit
+		switch (cbm_k_getin()) {
+			case 0x51: // q - quit
+			game_state = GAME_EXIT;
+			break;
+			case 0x52: // r - re-match
+			game_state = GAME_REMATCH;
+			break;
+			case 0x4D: // m - menu
+			game_state = GAME_RESTART;
+			break;
+			default:
+			break;
+		}
+	}
 }
 
 void update_lives()
@@ -178,7 +250,7 @@ void update_lives()
 	if (player_one.life!=player_one.last_life)
 	{
 		gotoxy(6,1);
-		for (n=0; n<NUM_OF_LIVES; n++){
+		for (n=1; n<=NUM_OF_LIVES; n++){
 			if (n<=player_one.life) set_text_color(COLOR_WHITE);
 			else set_text_color(COLOR_LIGHT_BLUE);
 			cputc(0xA1);
@@ -188,7 +260,7 @@ void update_lives()
 	if (player_two.life!=player_two.last_life)
 	{
 		gotoxy(29,1);
-		for (n=0; n<NUM_OF_LIVES; n++){
+		for (n=1; n<=NUM_OF_LIVES; n++){
 			if (n<=player_two.life) set_text_color(COLOR_WHITE);
 			else set_text_color(COLOR_LIGHT_BLUE);
 			cputc(0xA1);
@@ -213,6 +285,8 @@ void update_scores()
 	printf("%d:%d",player_one.score, player_two.score);
 	update_lives();
 }
+
+/* Draw the character based play field */
 
 void draw_field (void)
 {
@@ -263,12 +337,7 @@ void animate_players ()
 	set_sprite_coordinates (PLAYER_TWO, player_two.pos_x, player_two.pos_y);
 }
 
-/* Movement of the projectile */
-
-bool ball_x_dir = false;
-bool ball_y_dir = true;
-unsigned char ball_y = 140;
-int  ball_x = 128;
+/* Movement of the ball */
 
 void move_ball()
 {
@@ -314,19 +383,6 @@ void move_ball()
 	set_sprite_coordinates (BALL, ball_x, ball_y);
 }
 
-void init_players()
-{
-	player_one.life	 = NUM_OF_LIVES;
-	player_one.score = 0;
-	player_one.pos_x = 84; // edge at 30
-	player_one.pos_y = 123;
-
-	player_two.life  = NUM_OF_LIVES;
-	player_two.score = 0;
-	player_two.pos_x = 260; // edge at 310
-	player_two.pos_y = 123;
-}
-
 /* Main game cycle */
 
 int main (void)
@@ -335,8 +391,8 @@ int main (void)
 	joy_install (joy_static_stddrv);
 
 	screensize (&screen_size_x, &screen_size_y);
-	clear_screen ();
 
+	restart:
 	// multicolor sprites
 	set_sprite_mode_mask(0b00000111);
 
@@ -356,25 +412,44 @@ int main (void)
   set_sprite_from_block  (PLAYER_ONE, 13);
 	set_sprite_from_block  (PLAYER_TWO, 14);
 	set_sprite_from_block  (BALL, 15);
-
 	stretch_sprites (0b00000000, 0b00000011); // 1 - stretched on (h_mask, v_mask)
-	set_sprite_enable_mask (0b00000111); // 1 - enabled
 	set_sprite_priority_mask (0b00000000); // 1 - behind background
-	//enable_multicolor_chars(true);
+	set_sprite_enable_mask (0b00000111); // 1 - enabled
 
-	init_players();
-	draw_title();
-	draw_field();
+	clear_screen ();
+	draw_title ();
 
-  while (1)
+	rematch:
+	init_players ();
+	draw_field ();
+
+
+  while (game_state != GAME_EXIT)
 	{
-		poll_joysticks();
-		animate_players();
-		move_ball();
+		poll_joysticks ();
+		animate_players ();
+		move_ball ();
+		switch (game_state)
+		{
+			case GAME_IS_ON:
+			// nothing to do
+			break;
+			case GAME_REMATCH:
+			goto rematch;
+			break;
+			case GAME_RESTART:
+			goto restart;
+			break;
+			default:
+			break;
+		}
 	}
 
+	set_sprite_enable_mask (0b00000000);
+	set_border_color (COLOR_LIGHT_BLUE);
+	set_background_color (COLOR_BLUE);
 	joy_uninstall ();
 	clear_screen ();
-  printf ("Exited\n");
+  printf ("Good bye!\n");
   return EXIT_SUCCESS;
 }
