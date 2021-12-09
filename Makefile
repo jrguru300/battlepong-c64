@@ -1,4 +1,4 @@
-SOURCES = main.c gfx.c
+SOURCES = main.c gfx.c sound.c
 ASOURCES =
 CC65_TARGET = c64
 NAME = battlepong

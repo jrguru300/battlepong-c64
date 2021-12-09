@@ -8,6 +8,7 @@
 #include <joystick.h>
 #include <peekpoke.h>
 
+#include "sound.h"
 #include "gfx.h"
 #include "spritedata.h"
 #include "players.h"
@@ -30,7 +31,7 @@ char score[] = "0:0";
 #define BALL			 2
 
 #define NUM_OF_LIVES 	 5
-#define LOSS_TO_LIFE	 5
+#define LOSS_TO_LIFE	 1
 #define PLAYER_V_SPEED 2
 #define PLAYER_H_SPEED 1
 #define GAME_RESTART	 0
@@ -41,6 +42,7 @@ char score[] = "0:0";
 
 unsigned char screen_size_x, screen_size_y;
 unsigned char game_state = 0;
+unsigned char game_speed = 255;
 
 bool ball_x_dir = false;
 bool ball_y_dir = true;
@@ -58,15 +60,33 @@ void reset_ball()
 
 void init_players()
 {
+	unsigned char n;
+	
 	player_one.life	 = NUM_OF_LIVES;
+	player_one.last_life = NUM_OF_LIVES;
 	player_one.score = 0;
 	player_one.pos_x = 84;
 	player_one.pos_y = 123;
 
 	player_two.life  = NUM_OF_LIVES;
+	player_two.last_life = NUM_OF_LIVES;
 	player_two.score = 0;
 	player_two.pos_x = 260;
 	player_two.pos_y = 123;
+
+	gotoxy(6,1);
+	for (n=1; n<=NUM_OF_LIVES; n++){
+		if (n<=player_one.life) set_text_color(COLOR_WHITE);
+		else set_text_color(COLOR_LIGHT_BLUE);
+		cputc(0xA1);
+	}
+
+	gotoxy(29,1);
+	for (n=1; n<=NUM_OF_LIVES; n++){
+		if (n<=player_two.life) set_text_color(COLOR_WHITE);
+		else set_text_color(COLOR_LIGHT_BLUE);
+		cputc(0xA1);
+	}
 
 	game_state = GAME_IS_ON;
 	set_sprite_enable_mask (0b00000111);
@@ -256,7 +276,7 @@ void shake_borders (unsigned char color)
 
 void update_lives (void)
 {
-	unsigned char n, c;
+	unsigned char n;
 
 	player_one.life = NUM_OF_LIVES-(player_two.score/LOSS_TO_LIFE);
 	player_two.life = NUM_OF_LIVES-(player_one.score/LOSS_TO_LIFE);
@@ -290,6 +310,7 @@ void update_lives (void)
 
 void update_scores()
 {
+	ball_sound();
 	if (player_one.score<10){
 		gotoxy(screen_size_x/2-1, 1);
 	}
@@ -436,8 +457,8 @@ int main (void)
 	draw_title ();
 
 	rematch:
-	init_players ();
 	draw_field ();
+	init_players ();
 
 
   while (game_state != GAME_EXIT)
@@ -445,6 +466,9 @@ int main (void)
 		poll_joysticks ();
 		animate_players ();
 		move_ball ();
+
+		//raster_wait(game_speed);
+
 		switch (game_state)
 		{
 			case GAME_IS_ON:
