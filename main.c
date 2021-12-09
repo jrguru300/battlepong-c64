@@ -17,6 +17,8 @@
 struct player player_one;
 struct player player_two;
 
+const char player_name[5][5] = {"Zero", "Nick", "Yodh", "Iris", "Pong"};
+
 #define PLAYER_ONE 0
 #define PLAYER_TWO 1
 #define BALL			 2
@@ -55,12 +57,44 @@ void poll_joysticks (void)
 void draw_title ()
 {
 	unsigned char n, i;
-
 	for (i=0; i<4; i++){
 		for (n=0; n<40; n++){
 			poke_char_to(title[i*40+n], n, i);
 		}
 	}
+
+	set_text_color(COLOR_WHITE);
+	character_box (5, 6, 6, 7);
+	set_sprite_coordinates (PLAYER_ONE, 84, 115);
+
+	character_box (25, 6, 6, 7);
+	set_sprite_coordinates (PLAYER_TWO, 244, 115);
+
+	gotoxy(17, 10);
+	printf("VS.");
+
+	i = COLOR_WHITE;
+	n = COLOR_GREEN;
+
+	while (!(JOY_FIRE (player_two.joy)))
+	{
+		poll_joysticks();
+		if (JOY_LEFT  (player_one.joy)) i--;
+		if (JOY_RIGHT (player_one.joy)) i++;
+		if (JOY_LEFT  (player_two.joy)) n--;
+		if (JOY_RIGHT (player_two.joy)) n++;
+
+		i = constrain_char(i, 1, 5);
+		set_sprite_color (PLAYER_ONE, i);
+		gotoxy(7,15);
+		printf("%s",player_name[i-1]);
+
+		n = constrain_char(n, 1, 5);
+		set_sprite_color (PLAYER_TWO, n);
+		gotoxy(27,15);
+		printf("%s",player_name[n-1]);
+	}
+
 }
 
 /* Draw the character based play field */
@@ -169,8 +203,6 @@ int main (void)
 	set_sprite_color_1 (COLOR_ORANGE);
 
 	// individual colors of sprites
-	set_sprite_color (PLAYER_ONE, COLOR_WHITE);
-	set_sprite_color (PLAYER_TWO, COLOR_WHITE);
 	set_sprite_color (BALL, COLOR_WHITE);
 
 	set_border_color (COLOR_BLUE);
@@ -196,11 +228,6 @@ int main (void)
 
 	draw_title();
 
-	while (!(JOY_FIRE (player_two.joy)))
-	{
-		poll_joysticks();
-	}
-
 	draw_field();
 
   while (1)
@@ -208,6 +235,7 @@ int main (void)
 		poll_joysticks();
 		animate_players();
 		move_ball();
+		raster_wait(100); // TODO: change game speed according to level
 	}
 
 	joy_uninstall ();

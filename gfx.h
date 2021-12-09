@@ -74,6 +74,7 @@ void load_char_array (unsigned char *array);
 void change_character_set   (unsigned char set);
 void poke_char_to (unsigned char c, char x, unsigned char y);
 void text_reverse (bool enable);
+void character_box (unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y);
 
 unsigned char get_raster    (void);
 unsigned char get_sprite_collision_mask (void);

@@ -73,6 +73,19 @@ void text_reverse (bool enable)
   POKE(0xC7, enable);
 }
 
+void character_box (unsigned char from_x, unsigned char from_y, unsigned char to_x, unsigned char to_y)
+{
+  gotoxy(from_x, from_y);
+  cputc (CH_ULCORNER);
+  chline (to_x);
+  cputc (CH_URCORNER);
+  cvlinexy (from_x, from_y+1, to_y);
+  cputc (CH_LLCORNER);
+  chline (to_x);
+  cputc (CH_LRCORNER);
+  cvlinexy (from_x+to_x+1, from_y+1, to_y);
+}
+
 void change_character_set (unsigned char set)
 {
   switch (set){
