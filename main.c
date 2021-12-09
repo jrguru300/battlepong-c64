@@ -15,6 +15,8 @@
 #include "utils.h"
 #include "title.h"
 
+extern int start_sidtune_player();
+
 struct player player_one;
 struct player player_two;
 
@@ -31,7 +33,7 @@ char score[] = "0:0";
 #define BALL			 2
 
 #define NUM_OF_LIVES 	 5
-#define LOSS_TO_LIFE	 1
+#define LOSS_TO_LIFE	 5
 #define PLAYER_V_SPEED 2
 #define PLAYER_H_SPEED 1
 #define GAME_RESTART	 0
@@ -428,6 +430,7 @@ int main (void)
 	screensize (&screen_size_x, &screen_size_y);
 	set_text_color(COLOR_YELLOW);
 	printf("Loading...");
+	//start_sidtune_player();
 
 	restart:
 	// multicolor sprites
