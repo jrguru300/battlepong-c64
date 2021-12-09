@@ -18,6 +18,9 @@ struct player player_one;
 struct player player_two;
 
 const char player_name[5][5] = {"Zero", "Nick", "Yodh", "Iris", "Pong"};
+const char help_line_1[] = "F1 | JOY1 to select player one";
+const char help_line_2[] = "F2 | JOY2 to select player two";
+const char help_line_3[] = "PRESS FIRE TO START!";
 
 #define PLAYER_ONE 0
 #define PLAYER_TWO 1
@@ -57,20 +60,28 @@ void poll_joysticks (void)
 void draw_title ()
 {
 	unsigned char n, i;
+
 	for (i=0; i<4; i++){
 		for (n=0; n<40; n++){
 			poke_char_to(title[i*40+n], n, i);
 		}
 	}
 
+	set_text_color(COLOR_LIGHT_BLUE);
+	character_box (5, 7, 6, 7);
+	set_sprite_coordinates (PLAYER_ONE, 84, 123);
+	character_box (27, 7, 6, 7);
+	set_sprite_coordinates (PLAYER_TWO, 260, 123);
+
+	gotoxy(screen_size_x/2-strlen(help_line_1)/2, 20);
+	printf("%s", help_line_1);
+	gotoxy(screen_size_x/2-strlen(help_line_2)/2, 21);
+	printf("%s", help_line_2);
+	gotoxy(screen_size_x/2-strlen(help_line_3)/2, 24);
+	printf("%s", help_line_3);
+
 	set_text_color(COLOR_WHITE);
-	character_box (5, 6, 6, 7);
-	set_sprite_coordinates (PLAYER_ONE, 84, 115);
-
-	character_box (25, 6, 6, 7);
-	set_sprite_coordinates (PLAYER_TWO, 244, 115);
-
-	gotoxy(17, 10);
+	gotoxy(19, 10);
 	printf("VS.");
 
 	i = COLOR_WHITE;
@@ -79,20 +90,46 @@ void draw_title ()
 	while (!(JOY_FIRE (player_two.joy)))
 	{
 		poll_joysticks();
-		if (JOY_LEFT  (player_one.joy)) i--;
-		if (JOY_RIGHT (player_one.joy)) i++;
-		if (JOY_LEFT  (player_two.joy)) n--;
-		if (JOY_RIGHT (player_two.joy)) n++;
 
-		i = constrain_char(i, 1, 5);
+		// cycle through the players with function keys
+		switch (cbm_k_getin()) {
+			case 133: // F1
+			if (i>4) i = 1;
+			i++;
+			break;
+
+			case 137: // F2
+			if (n>4) n = 1;
+			n++;
+			break;
+
+			default:
+			break;
+		}
+
+		// select player with respective joysticks
+		if (player_one.last_joy != player_one.joy){
+			if (JOY_LEFT  (player_one.joy)) i--;
+			if (JOY_RIGHT (player_one.joy)) i++;
+			i = constrain_char(i, 1, 5);
+		}
+
+		if (player_two.last_joy != player_two.joy){
+			if (JOY_LEFT  (player_two.joy)) n--;
+			if (JOY_RIGHT (player_two.joy)) n++;
+			n = constrain_char(n, 1, 5);
+		}
+
 		set_sprite_color (PLAYER_ONE, i);
-		gotoxy(7,15);
+		gotoxy(7,16);
 		printf("%s",player_name[i-1]);
 
-		n = constrain_char(n, 1, 5);
 		set_sprite_color (PLAYER_TWO, n);
-		gotoxy(27,15);
+		gotoxy(29,16);
 		printf("%s",player_name[n-1]);
+
+		player_one.last_joy = player_one.joy;
+		player_two.last_joy = player_two.joy;
 	}
 
 }
@@ -219,15 +256,14 @@ int main (void)
 	set_sprite_enable_mask (0b00000111); // 1 - enabled
 	set_sprite_priority_mask (0b00000000); // 1 - behind background
 
-	player_one.pos_x = 40; // edge at 30
-	player_one.pos_y = 140;
-	player_two.pos_x = 300; // edge at 310
-	player_two.pos_y = 140;
+	player_one.pos_x = 84; // edge at 30
+	player_one.pos_y = 123;
+	player_two.pos_x = 260; // edge at 310
+	player_two.pos_y = 123;
 
 	//enable_multicolor_chars(true);
 
 	draw_title();
-
 	draw_field();
 
   while (1)

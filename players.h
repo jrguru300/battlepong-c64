@@ -4,6 +4,7 @@
 typedef struct player
 {
   unsigned char joy;
+  unsigned char last_joy;
   int pos_x;
   unsigned char pos_y;
 };
