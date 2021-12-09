@@ -60,8 +60,6 @@ void reset_ball()
 
 void init_players()
 {
-	unsigned char n;
-	
 	player_one.life	 = NUM_OF_LIVES;
 	player_one.last_life = NUM_OF_LIVES;
 	player_one.score = 0;
@@ -73,20 +71,6 @@ void init_players()
 	player_two.score = 0;
 	player_two.pos_x = 260;
 	player_two.pos_y = 123;
-
-	gotoxy(6,1);
-	for (n=1; n<=NUM_OF_LIVES; n++){
-		if (n<=player_one.life) set_text_color(COLOR_WHITE);
-		else set_text_color(COLOR_LIGHT_BLUE);
-		cputc(0xA1);
-	}
-
-	gotoxy(29,1);
-	for (n=1; n<=NUM_OF_LIVES; n++){
-		if (n<=player_two.life) set_text_color(COLOR_WHITE);
-		else set_text_color(COLOR_LIGHT_BLUE);
-		cputc(0xA1);
-	}
 
 	game_state = GAME_IS_ON;
 	set_sprite_enable_mask (0b00000111);
@@ -326,6 +310,9 @@ void update_scores()
 
 void draw_field (void)
 {
+	unsigned char n;
+
+	clear_screen();
 	set_text_color(COLOR_LIGHT_BLUE);
 	// field background
 	fill_with_char(123, 1, 1, 39, 25);
@@ -349,6 +336,19 @@ void draw_field (void)
 	printf("%s",player_name[player_two.id]);
 	// display initial scores
 	update_scores();
+	gotoxy(6,1);
+	for (n=1; n<=NUM_OF_LIVES; n++){
+		if (n<=player_one.life) set_text_color(COLOR_WHITE);
+		else set_text_color(COLOR_LIGHT_BLUE);
+		cputc(0xA1);
+	}
+
+	gotoxy(29,1);
+	for (n=1; n<=NUM_OF_LIVES; n++){
+		if (n<=player_two.life) set_text_color(COLOR_WHITE);
+		else set_text_color(COLOR_LIGHT_BLUE);
+		cputc(0xA1);
+	}
 }
 
 /* Player animations and sprite streching */
@@ -457,9 +457,8 @@ int main (void)
 	draw_title ();
 
 	rematch:
-	draw_field ();
 	init_players ();
-
+	draw_field ();
 
   while (game_state != GAME_EXIT)
 	{
