@@ -1,5 +1,5 @@
 SOURCES = main.c gfx.c sound.c
-ASOURCES = sidplay.s
+ASOURCES =
 CC65_TARGET = c64
 NAME = battlepong
 PROGRAM = $(NAME).prg
