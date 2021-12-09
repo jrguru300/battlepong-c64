@@ -21,6 +21,11 @@ void set_text_color (unsigned char color)
   textcolor ( color );
 }
 
+void poke_text_color (unsigned char color)
+{
+  POKE(0x0286, color);
+}
+
 /*
   Depending on the bit-pair combination, the color of each pixel will be:
 

@@ -30,7 +30,7 @@ char score[] = "0:0";
 #define BALL			 2
 
 #define NUM_OF_LIVES 	 5
-#define LOSS_TO_LIFE	 1
+#define LOSS_TO_LIFE	 5
 #define PLAYER_V_SPEED 2
 #define PLAYER_H_SPEED 1
 #define GAME_RESTART	 0
@@ -102,7 +102,7 @@ void draw_title ()
 {
 	unsigned char n, i;
 
-	set_text_color(COLOR_WHITE);
+	poke_text_color(COLOR_WHITE);
 	for (i=0; i<4; i++){
 		for (n=0; n<40; n++){
 			poke_char_to(title[i*40+n], n, i);
@@ -120,15 +120,16 @@ void draw_title ()
 	gotoxy(screen_size_x/2-strlen(help_line_2)/2, 21);
 	printf("%s", help_line_2);
 
-	set_text_color(COLOR_WHITE);
+	set_text_color(COLOR_YELLOW);
 	gotoxy(screen_size_x/2-strlen(help_line_3)/2, 24);
 	printf("%s", help_line_3);
+
+	set_text_color(COLOR_WHITE);
 	gotoxy(19, 11);
 	printf("VS.");
 
 	i = COLOR_WHITE;
 	n = COLOR_GREEN;
-
 	while (!(JOY_FIRE (player_two.joy)||(JOY_FIRE (player_one.joy))))
 	{
 		poll_joysticks();
@@ -200,7 +201,7 @@ void game_over()
 	printf("[R]");
 	gotoxy(29, 20);
 	printf("[Q]");
-	set_text_color(COLOR_LIGHT_BLUE);
+	set_text_color(COLOR_YELLOW);
 	gotoxy(9, 20);
 	printf("enu");
 	gotoxy(19, 20);
@@ -240,9 +241,22 @@ void game_over()
 	}
 }
 
-void update_lives()
+void shake_borders (unsigned char color)
 {
 	unsigned char n;
+	for (n=0; n<128; n++)
+	{
+		set_border_color (color);
+		raster_wait(25);
+		set_border_color (COLOR_BLUE);
+		raster_wait(25);
+	}
+	set_border_color (COLOR_BLUE);
+}
+
+void update_lives (void)
+{
+	unsigned char n, c;
 
 	player_one.life = NUM_OF_LIVES-(player_two.score/LOSS_TO_LIFE);
 	player_two.life = NUM_OF_LIVES-(player_one.score/LOSS_TO_LIFE);
@@ -255,6 +269,7 @@ void update_lives()
 			else set_text_color(COLOR_LIGHT_BLUE);
 			cputc(0xA1);
 		}
+		shake_borders (player_one.id+1);
 	}
 
 	if (player_two.life!=player_two.last_life)
@@ -265,10 +280,10 @@ void update_lives()
 			else set_text_color(COLOR_LIGHT_BLUE);
 			cputc(0xA1);
 		}
+		shake_borders (player_two.id+1);
 	}
 
 	if (player_two.life==0 || player_one.life==0) game_over();
-
 	player_one.last_life = player_one.life;
 	player_two.last_life = player_two.life;
 }
@@ -389,8 +404,9 @@ int main (void)
 {
 
 	joy_install (joy_static_stddrv);
-
 	screensize (&screen_size_x, &screen_size_y);
+	set_text_color(COLOR_YELLOW);
+	printf("Loading...");
 
 	restart:
 	// multicolor sprites
@@ -414,7 +430,7 @@ int main (void)
 	set_sprite_from_block  (BALL, 15);
 	stretch_sprites (0b00000000, 0b00000011); // 1 - stretched on (h_mask, v_mask)
 	set_sprite_priority_mask (0b00000000); // 1 - behind background
-	set_sprite_enable_mask (0b00000111); // 1 - enabled
+	set_sprite_enable_mask (0b00000011); // 1 - enabled
 
 	clear_screen ();
 	draw_title ();

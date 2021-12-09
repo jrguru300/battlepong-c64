@@ -53,6 +53,7 @@ void clear_screen           (void);
 void set_background_color   (unsigned char color);
 void set_border_color       (unsigned char color);
 void set_text_color         (unsigned char color);
+void poke_text_color        (unsigned char color);
 void set_sprite_mode_mask   (unsigned char mask);
 void set_sprite_color       (unsigned char spriteno, unsigned char color);
 void set_sprite_color_0     (unsigned char color);
