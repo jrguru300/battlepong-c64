@@ -1,3 +1,4 @@
+#include <6502.h>
 #include <cc65.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -398,25 +399,35 @@ void move_ball()
 		ball_y_dir = true;
 	}
 
-	// TODO: setup collision interrupt
-
-	if (sprite_collision(BALL)) { // ball is hit by either of players
-		ball_x_dir=!ball_x_dir;
+	if (ball_x>320) { // ball is out on right side
+		ball_x_dir=!ball_x_dir; // reverse for now
+		player_one.score+=1;
+		update_scores();
 	}
-	else { // ball is traversing without collision
-		if (ball_x>320) { // ball is out on right side
-			ball_x_dir=!ball_x_dir; // reverse for now
-			player_one.score+=1;
-			update_scores();
-		}
-		if (ball_x<25) { // ball is out on left side
-			ball_x_dir=!ball_x_dir; // reverse for now
-			player_two.score+=1;
-			update_scores();
-		}
+	if (ball_x<25) { // ball is out on left side
+		ball_x_dir=!ball_x_dir; // reverse for now
+		player_two.score+=1;
+		update_scores();
 	}
 
 	set_sprite_coordinates (BALL, ball_x, ball_y);
+}
+
+/* Collision interrupt */
+
+void collision_irq(void) {
+	// if (sprite_collision(BALL)) { // ball is hit by either of players
+		ball_x_dir=!ball_x_dir;
+	// }
+  VIC.irr = 0b00000001;
+  __asm__(" jmp $ea31"); // jump to irq vector
+}
+
+void __fastcall__ irq_setup(void (*irqh)(void)) {
+	CIA1.icr = 0x7f;
+	VIC.imr  = 0; // disable IRQ sources, SEI not needed
+	POKEW(0x0314, (int)irqh); // set kernal IRQ vector
+	VIC.imr  = 0b00000001; //  Interrupt Mask Register. Bit#2 high Sprite-Sprite collision.
 }
 
 /* Main game cycle */
@@ -428,6 +439,8 @@ int main (void)
 	screensize (&screen_size_x, &screen_size_y);
 	set_text_color(COLOR_YELLOW);
 	printf("Loading...");
+
+	irq_setup(&collision_irq);
 
 	restart:
 	// multicolor sprites
