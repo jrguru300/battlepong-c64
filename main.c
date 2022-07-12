@@ -410,24 +410,25 @@ void move_ball()
 		update_scores();
 	}
 
+	if (sprite_collision(BALL)) ball_x_dir=!ball_x_dir;
+
 	set_sprite_coordinates (BALL, ball_x, ball_y);
 }
 
 /* Collision interrupt */
 
 void collision_irq(void) {
-	// if (sprite_collision(BALL)) { // ball is hit by either of players
-		ball_x_dir=!ball_x_dir;
-	// }
-  VIC.irr = 0b00000001;
-  __asm__(" jmp $ea31"); // jump to irq vector
+	VIC.irr = 0b00000100; // interrupt request register
+	ball_x_dir=!ball_x_dir;
+	get_sprite_collision_mask(); // read to clear
+	__asm__("JMP $EA31"); // jump to irq vector
 }
 
 void __fastcall__ irq_setup(void (*irqh)(void)) {
 	CIA1.icr = 0x7f;
 	VIC.imr  = 0; // disable IRQ sources, SEI not needed
 	POKEW(0x0314, (int)irqh); // set kernal IRQ vector
-	VIC.imr  = 0b00000001; //  Interrupt Mask Register. Bit#2 high Sprite-Sprite collision.
+	VIC.imr  = 0b00000100; //  Interrupt Mask Register: Bit#2 Sprite-Sprite collision. Bit#0 Raster
 }
 
 /* Main game cycle */
@@ -440,7 +441,7 @@ int main (void)
 	set_text_color(COLOR_YELLOW);
 	printf("Loading...");
 
-	irq_setup(&collision_irq);
+	// irq_setup(&collision_irq); // breaks cbm_k_getin for some reason
 
 	restart:
 	// multicolor sprites
